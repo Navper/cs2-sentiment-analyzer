@@ -1,0 +1,17 @@
+# API Keys y Secretos de Streamlit (¡NUNCA SUBIR ESTO A GITHUB!)
+.streamlit/secrets.toml
+
+# Entornos Virtuales
+.venv/
+venv/
+env/
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de SO
+.DS_Store
+Thumbs.db
