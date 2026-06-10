@@ -9,62 +9,41 @@ import re
 st.set_page_config(page_title="CS2 Market Sentiment Index", layout="centered")
 
 def extract_reddit_data(keyword, time_filter="all", limit=100):
-    search_url = f"https://www.reddit.com/r/csgomarketforum/search.json"
-    search_params = {
-        "q": keyword,
-        "restrict_sr": "on",
-        "sort": "relevance",
-        "t": time_filter,
-        "limit": 5
-    }
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    }
-    
     extracted_data = []
-    import time
     try:
-        response = requests.get(search_url, params=search_params, headers=headers)
+        url = "https://api.pullpush.io/reddit/search/comment/"
+        params = {
+            "q": keyword,
+            "subreddit": "csgomarketforum",
+            "size": limit
+        }
+        
+        import time
+        if time_filter != "all":
+            now = int(time.time())
+            days_map = {"week": 7, "month": 30, "year": 365}
+            days = days_map.get(time_filter, 30)
+            params["after"] = now - (days * 24 * 60 * 60)
+
+        response = requests.get(url, params=params)
+        
         if response.status_code == 200:
-            posts = response.json().get('data', {}).get('children', [])
-            post = response.json().get('data', {})
-            
-            for post in posts:
-                post_data = post.get('data', {})
-                permalink = post_data.get('permalink', '')
-                post_title = post_data.get('title', '')
-                
-                if not permalink:
-                    continue
-                    
-                post_url = f"https://www.reddit.com{permalink[:-1]}.json"
-                try:
-                    post_response = requests.get(post_url, headers=headers)
-                    if post_response.status_code == 200:
-                        post_json = post_response.json()
-                        if isinstance(post_json, list) and len(post_json) > 1:
-                            comments = post_json[1].get('data', {}).get('children', [])
-                            for comment in comments:
-                                if comment.get('kind') == 't1':
-                                    c_data = comment.get('data', {})
-                                    body = c_data.get('body', '')
-                                    if body and body not in ['[deleted]', '[removed]']:
-                                        extracted_data.append({
-                                            "title": f"Re: {post_title[:40]}...",
-                                            "text": body,
-                                            "url": f"https://www.reddit.com{c_data.get('permalink', permalink)}",
-                                            "score": c_data.get('score', 0)
-                                        })
-                    time.sleep(0.5)
-                except Exception as inner_e:
-                    pass
-                    
-                if len(extracted_data) >= limit:
-                    break
+            data = response.json().get('data', [])
+            for comment in data:
+                body = comment.get('body', '')
+                if body and body not in ['[deleted]', '[removed]']:
+                    permalink = comment.get('permalink', '')
+                    extracted_data.append({
+                        "title": f"Re: {keyword} discussion",
+                        "text": body,
+                        "url": f"https://www.reddit.com{permalink}",
+                        "score": comment.get('score', 0)
+                    })
         else:
-            st.warning(f"Reddit bloqueó temporalmente la IP ({response.status_code}). Intenta de nuevo en unos minutos.")
+            st.warning(f"La API de PullPush devolvió un error ({response.status_code}). Intenta de nuevo en unos minutos.")
+                
     except Exception as e:
-        st.error(f"Error al conectar con Reddit: {e}")
+        st.error(f"Error al conectar con la API pública de PullPush: {e}")
         
     return extracted_data[:limit]
 
@@ -249,6 +228,7 @@ def main():
     st.markdown("Analiza el sentimiento del mercado de **Counter-Strike 2** usando discusiones de Reddit y procesamiento de lenguaje natural (NLP) financiero.")
     
     gemini_api_key = st.secrets.get("GEMINI_API_KEY", "")
+    
     if not gemini_api_key or gemini_api_key == "TU_GEMINI_API_KEY_AQUI":
         st.warning("Debes configurar tu GEMINI_API_KEY en el archivo `.streamlit/secrets.toml` para usar la aplicación.")
         st.stop()
@@ -278,8 +258,8 @@ def main():
             st.warning("Por favor, introduce un término de búsqueda válido.")
             return
             
-        with st.spinner(f"Buscando los últimos posts sobre '{keyword}' en r/csgomarketforum..."):
-            reddit_data = extract_reddit_data(keyword, time_filter=time_filter, limit=150)
+        with st.spinner(f"Buscando comentarios sobre '{keyword}' en r/csgomarketforum usando PullPush..."):
+            reddit_data = extract_reddit_data(keyword, time_filter=time_filter, limit=100)
             
         if not reddit_data:
             st.error("No se encontró información o hubo un error de red.")
