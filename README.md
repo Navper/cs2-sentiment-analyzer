@@ -32,13 +32,13 @@ El sistema opera bajo un flujo de datos lineal y de procesamiento en tiempo real
 
 ### Backend y Lógica de Datos
 * Python 3
-* Google Generative AI API (Modelos Gemini Flash/Pro) para NLP[cite: 1, 4]
-* Pandas (>=2.0.0) para manipulación de DataFrames[cite: 4]
+* Google Generative AI API (Modelos Gemini Flash/Pro) para NLP
+* Pandas (>=2.0.0) para manipulación de DataFrames
 * Requests para conexiones a APIs externas
 
 ### Frontend y UI
-* Streamlit (>=1.30.0) como framework de aplicación web[cite: 4]
-* Plotly (>=5.18.0) para la renderización de Gauge Charts[cite: 4]
+* Streamlit (>=1.30.0) como framework de aplicación web
+* Plotly (>=5.18.0) para la renderización de Gauge Charts
 * JSON y expresiones regulares (Regex) para el parseo de respuestas del LLM
 
 ### Resumen de Tecnologías
@@ -47,8 +47,8 @@ El sistema opera bajo un flujo de datos lineal y de procesamiento en tiempo real
 | :--- | :--- | :--- |
 | UI & Dashboard | Streamlit + Plotly | Renderizado web y gráficos interactivos |
 | Data Scraping | Python + Requests API | Extracción de datos de Reddit en tiempo real |
-| Procesamiento IA | Google Gemini API | Análisis de sentimiento y resúmenes[cite: 1] |
-| Estructuración | Pandas + JSON | Organización de datos en tablas para la UI[cite: 1] |
+| Procesamiento IA | Google Gemini API | Análisis de sentimiento y resúmenes |
+| Estructuración | Pandas + JSON | Organización de datos en tablas para la UI |
 
 ---
 
